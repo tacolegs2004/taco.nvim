@@ -402,6 +402,7 @@ require("lazy").setup({
 			-- See `:help telescope.builtin`
 			local builtin = require("telescope.builtin")
 			vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "[S]earch [H]elp" })
+			vim.keymap.set("n", "<leader>th", builtin.colorscheme, { desc = "[S]earch Colorscheme" })
 			vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
 			vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "[S]earch [F]iles" })
 			vim.keymap.set("n", "<leader>fs", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
@@ -612,7 +613,7 @@ require("lazy").setup({
 					--
 					-- This may be unwanted, since they displace some of your code
 					if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-						map("<leader>th", function()
+						map("<leader>sh", function()
 							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
 						end, "[T]oggle Inlay [H]ints")
 					end
@@ -865,6 +866,8 @@ require("lazy").setup({
 		end,
 	},
 
+	-- NOTE: My colorschemes
+
 	{ -- You can easily change to a different colorscheme.
 		-- Change the name of the colorscheme plugin below, and then
 		-- change the command in the config to whatever the name of that colorscheme is.
@@ -883,7 +886,18 @@ require("lazy").setup({
 		end,
 	},
 
-	-- Highlight todo, notes, etc in comments
+	{
+		"catppuccin/nvim",
+		name = "catppuccin",
+		priority = 1000,
+		opts = {
+			flavour = "mocha",
+		},
+	},
+
+	"ellisonleao/gruvbox.nvim",
+
+	-- NOTE: Highlight todo, notes, etc in comments
 	{
 		"folke/todo-comments.nvim",
 		event = "VimEnter",
@@ -926,6 +940,81 @@ require("lazy").setup({
 
 			-- ... and there is more!
 			--  Check out: https://github.com/echasnovski/mini.nvim
+		end,
+	},
+	{
+		"lewis6991/gitsigns.nvim",
+		opts = {
+			on_attach = function(bufnr)
+				local gitsigns = require("gitsigns")
+
+				local function map(mode, l, r, opts)
+					opts = opts or {}
+					opts.buffer = bufnr
+					vim.keymap.set(mode, l, r, opts)
+				end
+
+				-- Navigation
+				map("n", "]c", function()
+					if vim.wo.diff then
+						vim.cmd.normal({ "]c", bang = true })
+					else
+						gitsigns.nav_hunk("next")
+					end
+				end, { desc = "Jump to next git [c]hange" })
+
+				map("n", "[c", function()
+					if vim.wo.diff then
+						vim.cmd.normal({ "[c", bang = true })
+					else
+						gitsigns.nav_hunk("prev")
+					end
+				end, { desc = "Jump to previous git [c]hange" })
+
+				-- Actions
+				-- visual mode
+				map("v", "<leader>hs", function()
+					gitsigns.stage_hunk({ vim.fn.line("."), vim.fn.line("v") })
+				end, { desc = "git [s]tage hunk" })
+				map("v", "<leader>hr", function()
+					gitsigns.reset_hunk({ vim.fn.line("."), vim.fn.line("v") })
+				end, { desc = "git [r]eset hunk" })
+				-- normal mode
+				map("n", "<leader>hs", gitsigns.stage_hunk, { desc = "git [s]tage hunk" })
+				map("n", "<leader>hr", gitsigns.reset_hunk, { desc = "git [r]eset hunk" })
+				map("n", "<leader>hS", gitsigns.stage_buffer, { desc = "git [S]tage buffer" })
+				map("n", "<leader>hu", gitsigns.undo_stage_hunk, { desc = "git [u]ndo stage hunk" })
+				map("n", "<leader>hR", gitsigns.reset_buffer, { desc = "git [R]eset buffer" })
+				map("n", "<leader>hp", gitsigns.preview_hunk, { desc = "git [p]review hunk" })
+				map("n", "<leader>hb", gitsigns.blame_line, { desc = "git [b]lame line" })
+				map("n", "<leader>hd", gitsigns.diffthis, { desc = "git [d]iff against index" })
+				map("n", "<leader>hD", function()
+					gitsigns.diffthis("@")
+				end, { desc = "git [D]iff against last commit" })
+				-- Toggles
+				map("n", "<leader>tb", gitsigns.toggle_current_line_blame, { desc = "[T]oggle git show [b]lame line" })
+				map("n", "<leader>tD", gitsigns.toggle_deleted, { desc = "[T]oggle git show [D]eleted" })
+			end,
+		},
+	},
+	{ -- Add indentation guides even on blank lines
+		"lukas-reineke/indent-blankline.nvim",
+		-- Enable `lukas-reineke/indent-blankline.nvim`
+		-- See `:help ibl`
+		main = "ibl",
+		opts = {},
+	},
+	{
+		"windwp/nvim-autopairs",
+		event = "InsertEnter",
+		-- Optional dependency
+		dependencies = { "hrsh7th/nvim-cmp" },
+		config = function()
+			require("nvim-autopairs").setup({})
+			-- If you want to automatically add `(` after selecting a function or method
+			local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+			local cmp = require("cmp")
+			cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
 		end,
 	},
 	{ -- Highlight, edit, and navigate code
