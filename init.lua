@@ -205,6 +205,8 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
+vim.keymap.set("n", "-", "<cmd>Oil<CR>")
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -257,6 +259,19 @@ require("lazy").setup({
 		},
 	},
 
+	-- NOTE: Theme Switcher
+	-- {
+	-- 	"LazyVim/LazyVim",
+	-- 	opts = {
+	-- 		-- colorscheme = "catppuccin-mocha",
+	-- 		colorscheme = "Eldritch",
+	-- 	},
+	-- },
+	{
+		"ghostty",
+		dir = "/Applications/Ghostty.app/Contents/Resources/vim/vimfiles/",
+		lazy = false,
+	},
 	-- NOTE: Plugins can also be configured to run Lua code when they are loaded.
 	--
 	-- This is often very useful to both group configuration, as well as handle
@@ -353,41 +368,10 @@ require("lazy").setup({
 			},
 			{ "nvim-telescope/telescope-ui-select.nvim" },
 
-			-- Useful for getting pretty icons, but requires a Nerd Font.
 			{ "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
 		},
 		config = function()
-			-- Telescope is a fuzzy finder that comes with a lot of different things that
-			-- it can fuzzy find! It's more than just a "file finder", it can search
-			-- many different aspects of Neovim, your workspace, LSP, and more!
-			--
-			-- The easiest way to use Telescope, is to start by doing something like:
-			--  :Telescope help_tags
-			--
-			-- After running this command, a window will open up and you're able to
-			-- type in the prompt window. You'll see a list of `help_tags` options and
-			-- a corresponding preview of the help.
-			--
-			-- Two important keymaps to use while in Telescope are:
-			--  - Insert mode: <c-/>
-			--  - Normal mode: ?
-			--
-			-- This opens a window that shows you all of the keymaps for the current
-			-- Telescope picker. This is really useful to discover what Telescope can
-			-- do as well as how to actually do it!
-
-			-- [[ Configure Telescope ]]
-			-- See `:help telescope` and `:help telescope.setup()`
 			require("telescope").setup({
-				-- You can put your default mappings / updates / etc. in here
-				--  All the info you're looking for is in `:help telescope.setup()`
-				--
-				-- defaults = {
-				--   mappings = {
-				--     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-				--   },
-				-- },
-				-- pickers = {}
 				extensions = {
 					["ui-select"] = {
 						require("telescope.themes").get_dropdown(),
@@ -403,6 +387,11 @@ require("lazy").setup({
 			local builtin = require("telescope.builtin")
 			vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "[S]earch [H]elp" })
 			vim.keymap.set("n", "<leader>th", builtin.colorscheme, { desc = "[S]earch Colorscheme" })
+			vim.keymap.set("n", "<space>fc", function()
+				require("telescope.builtin").find_files({
+					cwd = vim.fn.stdpath("config"),
+				})
+			end)
 			vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
 			vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "[S]earch [F]iles" })
 			vim.keymap.set("n", "<leader>fs", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
@@ -449,6 +438,18 @@ require("lazy").setup({
 				{ path = "${3rd}/luv/library", words = { "vim%.uv" } },
 			},
 		},
+	},
+	{
+		"stevearc/oil.nvim",
+		---@module 'oil'
+		---@type oil.SetupOpts
+		opts = {
+			view_options = { show_hidden = true },
+			delete_to_trash = true,
+		},
+		-- Optional dependencies
+		dependencies = { { "echasnovski/mini.icons", opts = {} } },
+		-- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
 	},
 	{ -- optional cmp completion source for require statements and module annotations
 		"hrsh7th/nvim-cmp",
@@ -866,6 +867,12 @@ require("lazy").setup({
 		end,
 	},
 
+	{
+		"mrcjkb/rustaceanvim",
+		version = "^5", -- Recommended
+		lazy = false, -- This plugin is already lazy
+	},
+
 	-- NOTE: My colorschemes
 
 	{ -- You can easily change to a different colorscheme.
@@ -879,10 +886,10 @@ require("lazy").setup({
 			-- Load the colorscheme here.
 			-- Like many other themes, this one has different styles, and you could load
 			-- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-			vim.cmd.colorscheme("tokyonight-night")
+			-- vim.cmd.colorscheme("tokyonight-night")
 
 			-- You can configure highlights by doing something like:
-			vim.cmd.hi("Comment gui=none")
+			-- vim.cmd.hi("Comment gui=none")
 		end,
 	},
 
@@ -893,9 +900,27 @@ require("lazy").setup({
 		opts = {
 			flavour = "mocha",
 		},
+
+		-- config = function()
+		-- 	vim.cmd("colorscheme catppuccin-mocha")
+		-- end,
 	},
 
 	"ellisonleao/gruvbox.nvim",
+
+	{
+		"eldritch-theme/eldritch.nvim",
+		lazy = false,
+		priority = 1000,
+		config = function()
+			require("eldritch").setup({
+				-- transparent = true,
+			})
+			vim.cmd("colorscheme eldritch")
+		end,
+	},
+
+	"rebelot/kanagawa.nvim",
 
 	-- NOTE: Highlight todo, notes, etc in comments
 	{
@@ -1003,19 +1028,6 @@ require("lazy").setup({
 		-- See `:help ibl`
 		main = "ibl",
 		opts = {},
-	},
-	{
-		"windwp/nvim-autopairs",
-		event = "InsertEnter",
-		-- Optional dependency
-		dependencies = { "hrsh7th/nvim-cmp" },
-		config = function()
-			require("nvim-autopairs").setup({})
-			-- If you want to automatically add `(` after selecting a function or method
-			local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-			local cmp = require("cmp")
-			cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
-		end,
 	},
 	{ -- Highlight, edit, and navigate code
 		"nvim-treesitter/nvim-treesitter",
