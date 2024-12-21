@@ -259,14 +259,6 @@ require("lazy").setup({
 		},
 	},
 
-	-- NOTE: Theme Switcher
-	-- {
-	-- 	"LazyVim/LazyVim",
-	-- 	opts = {
-	-- 		-- colorscheme = "catppuccin-mocha",
-	-- 		colorscheme = "Eldritch",
-	-- 	},
-	-- },
 	{
 		"ghostty",
 		dir = "/Applications/Ghostty.app/Contents/Resources/vim/vimfiles/",
@@ -897,13 +889,13 @@ require("lazy").setup({
 		"catppuccin/nvim",
 		name = "catppuccin",
 		priority = 1000,
-		opts = {
-			flavour = "mocha",
-		},
+		config = function()
+			require("catppuccin").setup({
+				transparent_background = true,
+			})
 
-		-- config = function()
-		-- 	vim.cmd("colorscheme catppuccin-mocha")
-		-- end,
+			vim.cmd("colorscheme catppuccin-mocha")
+		end,
 	},
 
 	"ellisonleao/gruvbox.nvim",
@@ -916,7 +908,7 @@ require("lazy").setup({
 			require("eldritch").setup({
 				-- transparent = true,
 			})
-			vim.cmd("colorscheme eldritch")
+			-- vim.cmd("colorscheme eldritch")
 		end,
 	},
 
